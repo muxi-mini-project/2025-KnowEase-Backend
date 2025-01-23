@@ -341,6 +341,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "收藏记录上传失败",
                         "schema": {
@@ -525,6 +531,12 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "校园帖子查询失败",
                         "schema": {
@@ -562,6 +574,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "500": {
@@ -603,6 +621,12 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "生活帖子查询失败",
                         "schema": {
@@ -640,6 +664,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "500": {
@@ -735,6 +765,12 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "推荐帖子查询失败",
                         "schema": {
@@ -772,6 +808,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "500": {
@@ -819,6 +861,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "取消收藏记录上传失败",
                         "schema": {
@@ -857,8 +905,53 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "查询失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/post/{postid}/getcounts": {
+            "get": {
+                "description": "获取帖子的点赞数，收藏数，浏览量",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "帖子"
+                ],
+                "summary": "获取帖子相关数值",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "帖子ID",
+                        "name": "postid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "相关数值",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -898,6 +991,12 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "用户取消点赞成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -999,8 +1098,53 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "取消点赞记录上传失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/post/{postid}/{commentid}/getcounts": {
+            "get": {
+                "description": "获取评论的点赞数",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "帖子-评论"
+                ],
+                "summary": "获取评论点赞数",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "评论ID",
+                        "name": "commentid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "相关数值",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1040,6 +1184,12 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "用户收藏成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1140,6 +1290,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "删除失败",
                         "schema": {
@@ -1185,8 +1341,53 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "取消点赞记录上传失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/post/{postid}/{commentid}/{replyid}/getcounts": {
+            "get": {
+                "description": "获取回复的点赞数",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "帖子-评论"
+                ],
+                "summary": "获取回复点赞数",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "回复ID",
+                        "name": "replyid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "相关数值",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1230,6 +1431,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Response"
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "点赞记录上传失败",
                         "schema": {
@@ -1264,6 +1471,12 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "查询用户获赞数成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1305,6 +1518,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "500": {
@@ -1353,6 +1572,12 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "查询失败",
                         "schema": {
@@ -1387,6 +1612,12 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "删帖成功！",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1474,6 +1705,12 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
                     "500": {
                         "description": "获取收藏记录失败",
                         "schema": {
@@ -1511,6 +1748,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
                         }
                     },
                     "500": {

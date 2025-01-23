@@ -45,5 +45,8 @@ func (p *PostSvc) NewPostGroup(r *gin.Engine) {
 		posts.POST("/:userid/post/:postid/:commentid/cancellike", p.lc.CancelCommentLike)
 		posts.POST("/:userid/post/:postid/:commentid/:replyid/like", p.lc.LikeReply)
 		posts.POST("/:userid/post/:postid/:commentid/:replyid/cancellike", p.lc.CancelReplyLike)
+		posts.GET("/:userid/post/:postid/getcounts", p.lc.GetPostCounts)
+		posts.GET("/:userid/post/:postid/:commentid/getcounts", p.lc.GetCommentCounts)
+		posts.GET("/:userid/post/:postid/:commentid/:replyid/getcounts", p.lc.GetReplyCounts)
 	}
 }

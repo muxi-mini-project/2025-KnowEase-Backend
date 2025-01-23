@@ -41,6 +41,10 @@ func NewPostControllers(PostService *services.PostService, LikeService *services
 func (pc *PostControllers) PublishPostBody(c *gin.Context) {
 	var Post models.PostMessage
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	if err := c.BindJSON(&Post); err != nil {
 		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试!"))
 		return
@@ -83,10 +87,15 @@ func (pc *PostControllers) PublishPostBody(c *gin.Context) {
 // @Produce  json
 // @Param postid path string true "帖子ID"
 // @Success 201 {object} models.Response "删帖成功！"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "删除帖子及其相关信息失败！"
 // @Router /api/{userid}/userpage/mypost/delete/{postid} [delete]
 func (pc *PostControllers) DeletePost(c *gin.Context) {
 	PostID := c.Param("postid")
+	if PostID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	var PostIDs []string
 	PostIDs = append(PostIDs, PostID)
 	if err := pc.PostService.DeletePost(PostIDs); err != nil {
@@ -113,7 +122,7 @@ func (pc *PostControllers) DeletePost(c *gin.Context) {
 func (pc *PostControllers) DeletePosts(c *gin.Context) {
 	var Post models.PostIDs
 	if err := c.BindJSON(&Post); err != nil {
-		c.JSON(http.StatusBadRequest, models.Write("输入无效请重试！"))
+		c.JSON(http.StatusBadRequest, models.Write("输入无效,请重试！"))
 		return
 	}
 	var PostIDS []string
@@ -143,10 +152,15 @@ func (pc *PostControllers) DeletePosts(c *gin.Context) {
 // @Produce  json
 // @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "推荐帖子查询失败"
 // @Router /api/{userid}/post/recommend [get]
 func (pc *PostControllers) RecommendationPost(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	WeightedRecord, err := pc.PostService.WeightedRecommendation(UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
@@ -180,10 +194,15 @@ func (pc *PostControllers) RecommendationPost(c *gin.Context) {
 // @Produce  json
 // @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "校园帖子查询失败"
 // @Router /api/{userid}/post/campus [get]
 func (pc *PostControllers) CampusPost(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	Posts, err := pc.PostService.SearchUnviewedPostsByTag(UserID, "校园")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
@@ -208,10 +227,15 @@ func (pc *PostControllers) CampusPost(c *gin.Context) {
 // @Produce  json
 // @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "生活帖子查询失败"
 // @Router /api/{userid}/post/life [get]
 func (pc *PostControllers) LifePost(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	Posts, err := pc.PostService.SearchUnviewedPostsByTag(UserID, "生活")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
@@ -236,10 +260,15 @@ func (pc *PostControllers) LifePost(c *gin.Context) {
 // @Produce  json
 // @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "美食帖子查询失败"
 // @Router /api/{userid}/post/food [get]
 func (pc *PostControllers) FoodPost(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	Posts, err := pc.PostService.SearchUnviewedPostsByTag(UserID, "美食")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
@@ -264,10 +293,15 @@ func (pc *PostControllers) FoodPost(c *gin.Context) {
 // @Produce  json
 // @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "绘画帖子查询失败"
 // @Router /api/{userid}/post/paint [get]
 func (pc *PostControllers) PaintPost(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	Posts, err := pc.PostService.SearchUnviewedPostsByTag(UserID, "绘画")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
@@ -300,6 +334,10 @@ func (pc *PostControllers) PublishComment(c *gin.Context) {
 	var Post models.Comment
 	PostID := c.Param("postid")
 	UserID := c.Param("userid")
+	if UserID == "" || PostID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	if err := c.BindJSON(&Post); err != nil {
 		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试!"))
 		return
@@ -342,10 +380,15 @@ func (pc *PostControllers) PublishComment(c *gin.Context) {
 // @Produce  json
 // @Param commentid path string true "评论ID"
 // @Success 201 {object} models.Response "删除成功"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "查询失败"
 // @Router /api/{userid}/post/{postid}/deletecomment [delete]
 func (pc *PostControllers) DeleteComment(c *gin.Context) {
 	CommentID := c.Param("commentid")
+	if CommentID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	if err := pc.PostService.DeleteComment(CommentID); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write("删除评论失败！"))
 		return
@@ -372,6 +415,10 @@ func (pc *PostControllers) DeleteComment(c *gin.Context) {
 func (pc *PostControllers) PublishReply(c *gin.Context) {
 	var Post models.Reply
 	CommentID, UserID, PostID := c.Param("comment_id"), c.Param("userid"), c.Param("postid")
+	if CommentID == "" || UserID == "" || PostID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	if err := c.BindJSON(&Post); err != nil {
 		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试!"))
 		return
@@ -415,10 +462,15 @@ func (pc *PostControllers) PublishReply(c *gin.Context) {
 // @Produce  json
 // @Param replyid path string true "回复ID"
 // @Success 201 {object} models.Response "删除成功"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "删除失败"
 // @Router /api/{userid}/post/{postid}/{commentid}/{replyid} [delete]
 func (pc *PostControllers) DeleteReply(c *gin.Context) {
 	ReplyID := c.Param("replyid")
+	if ReplyID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	if err := pc.PostService.DeleteReply(ReplyID); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write("删除评论失败！"))
 		return
@@ -438,11 +490,16 @@ func (pc *PostControllers) DeleteReply(c *gin.Context) {
 // @Produce  json
 // @Param postid path string true "帖子ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及帖子信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "查询失败"
 // @Router /api/{userid}/post/{postid} [get]
 func (pc *PostControllers) GetPostMessage(c *gin.Context) {
 	PostID := c.Param("postid")
 	UserID := c.Param("userid")
+	if PostID == "" || UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	pc.LikeService.ViewPost(PostID, UserID)
 	PostMessage, err := pc.PostService.GetAllComment(PostID)
 	if err != nil {
@@ -460,10 +517,15 @@ func (pc *PostControllers) GetPostMessage(c *gin.Context) {
 // @Param userid path string true "帖子ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及消息信息"
 // @Success 207 {object} map[string]interface{} "状态更新错误以及消息信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "查询失败"
 // @Router /api/{userid}/userpage/message [get]
 func (pc *PostControllers) GetUserUnreadMessage(c *gin.Context) {
 	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
 	Message, err := pc.PostService.SearchAllUnreadMessage(UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write("查询未读消息出错！"))

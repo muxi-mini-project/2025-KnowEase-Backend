@@ -151,6 +151,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 查询失败
           schema:
@@ -174,6 +178,10 @@ paths:
       responses:
         "201":
           description: 删除成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效，请重试!
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -206,11 +214,41 @@ paths:
           description: 用户取消点赞成功
           schema:
             $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 取消点赞记录上传失败
           schema:
             $ref: '#/definitions/models.Response'
       summary: 用户取消点赞回复
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/{replyid}/getcounts:
+    get:
+      consumes:
+      - application/json
+      description: 获取回复的点赞数
+      parameters:
+      - description: 回复ID
+        in: path
+        name: replyid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 相关数值
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取回复点赞数
       tags:
       - 帖子-评论
   /api/{userid}/post/{postid}/{commentid}/{replyid}/like:
@@ -234,6 +272,10 @@ paths:
       responses:
         "201":
           description: 用户点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -266,11 +308,41 @@ paths:
           description: 用户取消点赞成功
           schema:
             $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 取消点赞记录上传失败
           schema:
             $ref: '#/definitions/models.Response'
       summary: 用户取消点赞评论
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/getcounts:
+    get:
+      consumes:
+      - application/json
+      description: 获取评论的点赞数
+      parameters:
+      - description: 评论ID
+        in: path
+        name: commentid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 相关数值
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取评论点赞数
       tags:
       - 帖子-评论
   /api/{userid}/post/{postid}/{commentid}/like:
@@ -294,6 +366,10 @@ paths:
       responses:
         "201":
           description: 用户收藏成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -365,6 +441,10 @@ paths:
           description: 用户取消收藏成功
           schema:
             $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 取消收藏记录上传失败
           schema:
@@ -390,6 +470,10 @@ paths:
           description: 删除成功
           schema:
             $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 查询失败
           schema:
@@ -397,6 +481,32 @@ paths:
       summary: 删除评论
       tags:
       - 生活区-评论
+  /api/{userid}/post/{postid}/getcounts:
+    get:
+      consumes:
+      - application/json
+      description: 获取帖子的点赞数，收藏数，浏览量
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 相关数值
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取帖子相关数值
+      tags:
+      - 帖子
   /api/{userid}/post/{postid}/like:
     post:
       consumes:
@@ -418,6 +528,10 @@ paths:
       responses:
         "201":
           description: 用户取消点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -481,6 +595,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 校园帖子查询失败
           schema:
@@ -507,6 +625,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 美食帖子查询失败
           schema:
@@ -533,6 +655,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 生活帖子查询失败
           schema:
@@ -559,6 +685,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 绘画帖子查询失败
           schema:
@@ -621,6 +751,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 推荐帖子查询失败
           schema:
@@ -644,6 +778,10 @@ paths:
       responses:
         "200":
           description: 查询用户获赞数成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -672,6 +810,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 获取点赞记录失败
           schema:
@@ -703,6 +845,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 查询失败
           schema:
@@ -726,6 +872,10 @@ paths:
       responses:
         "201":
           description: 删帖成功！
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效，请重试!
           schema:
             $ref: '#/definitions/models.Response'
         "500":
@@ -783,6 +933,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 获取收藏记录失败
           schema:
@@ -809,6 +963,10 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
         "500":
           description: 获取浏览记录失败
           schema:
@@ -1027,6 +1185,10 @@ paths:
       responses:
         "201":
           description: 用户收藏成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
           schema:
             $ref: '#/definitions/models.Response'
         "500":

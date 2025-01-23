@@ -80,7 +80,6 @@ func (ls *LikeService) GetPostLikes(PostID string) (int, error) {
 		return 0, err
 	}
 	count, err := strconv.Atoi(likescount)
-	go ls.ld.SyncPostLikeToDB(PostID, count)
 	return count, err
 }
 
@@ -168,21 +167,20 @@ func (ls *LikeService) CancelSave(PostID, UserID string) error {
 }
 
 // 获取帖子的总收藏数
-func (ls *LikeService) GetPostSaves(PostID string) error {
+func (ls *LikeService) GetPostSaves(PostID string) (int, error) {
 	PosterID, err := ls.ld.SearchPostmessageFromPost(PostID)
 	if err != nil {
-		return fmt.Errorf("failed to find the poster:%w", err)
+		return 0, fmt.Errorf("failed to find the poster:%w", err)
 	}
 	key := fmt.Sprintf("Poster:%s:saves", PosterID.PosterID)
 	savescount, err := utils.Client.HGet(utils.Ctx, key, PostID).Result()
 	if err == redis.Nil {
-		return nil
+		return 0, nil
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 	count, err := strconv.Atoi(savescount)
-	go ls.ld.SyncPostSaveToDB(PostID, count)
-	return err
+	return count, err
 }
 
 // 查询用户收藏记录
@@ -217,21 +215,80 @@ func (ls *LikeService) ViewPost(PostID, UserID string) error {
 }
 
 // 获取帖子的总浏览数
-func (ls *LikeService) GetPostViews(PostID string) error {
+func (ls *LikeService) GetPostViews(PostID string) (int, error) {
 	PosterID, err := ls.ld.SearchPostmessageFromPost(PostID)
 	if err != nil {
-		return fmt.Errorf("failed to find the poster:%w", err)
+		return 0, fmt.Errorf("failed to find the poster:%w", err)
 	}
 	key := fmt.Sprintf("Poster:%s:views", PosterID.PosterID)
 	viewscount, err := utils.Client.HGet(utils.Ctx, key, PostID).Result()
 	if err == redis.Nil {
-		return nil
+		return 0, nil
 	} else if err != nil {
-		return err
+		return 0, err
 	}
 	count, err := strconv.Atoi(viewscount)
-	go ls.ld.SyncPostViewToDB(PostID, count)
-	return err
+	return count, err
+}
+
+// 将帖子浏览数写入数据库
+func (ls *LikeService) SyncPostViewToDB(PostID string) {
+	count, err := ls.GetPostViews(PostID)
+	if err != nil {
+		log.Printf("update post %s viewcount error:%v", PostID, err)
+	}
+	err = ls.ld.SyncPostViewToDB(PostID, count)
+	if err != nil {
+		log.Printf("update post %s viewcount error:%v", PostID, err)
+	}
+}
+
+// 将帖子点赞数写入数据库
+func (ls *LikeService) SyncPostLikeToDB(PostID string) {
+	count, err := ls.GetPostLikes(PostID)
+	if err != nil {
+		log.Printf("update post %s likecount error:%v", PostID, err)
+	}
+	err = ls.ld.SyncPostLikeToDB(PostID, count)
+	if err != nil {
+		log.Printf("update post %s likecount error:%v", PostID, err)
+	}
+}
+
+// 将帖子收藏数写入数据库
+func (ls *LikeService) SyncPostSaveToDB(PostID string) {
+	count, err := ls.GetPostSaves(PostID)
+	if err != nil {
+		log.Printf("update post %s savecount error:%v", PostID, err)
+	}
+	err = ls.ld.SyncPostSaveToDB(PostID, count)
+	if err != nil {
+		log.Printf("update post %s savecount error:%v", PostID, err)
+	}
+}
+
+// 将评论点赞数写入数据库
+func (ls *LikeService) SyncCommentLikeToDB(CommentID string) {
+	count, err := ls.GetCommentLikes(CommentID)
+	if err != nil {
+		log.Printf("update comment %s likecount error:%v", CommentID, err)
+	}
+	err = ls.ld.SyncCommentLikeToDB(CommentID, count)
+	if err != nil {
+		log.Printf("update comment %s likecount error:%v", CommentID, err)
+	}
+}
+
+// 将帖子评论数写入数据库
+func (ls *LikeService) SyncReplyLikeToDB(ReplyID string) {
+	count, err := ls.GetReplyLikes(ReplyID)
+	if err != nil {
+		log.Printf("update reply %s likecount error:%v", ReplyID, err)
+	}
+	err = ls.ld.SyncReplyLikeToDB(ReplyID, count)
+	if err != nil {
+		log.Printf("update reply %s likecount error:%v", ReplyID, err)
+	}
 }
 
 // 查询用户浏览记录
@@ -293,7 +350,6 @@ func (ls *LikeService) GetCommentLikes(CommentID string) (int, error) {
 		return 0, err
 	}
 	count, err := strconv.Atoi(savescount)
-	go ls.ld.SyncCommentLikeToDB(CommentID, count)
 	return count, err
 }
 
@@ -343,7 +399,7 @@ func (ls *LikeService) GetReplyLikes(ReplyID string) (int, error) {
 
 // 设置定时更新数据库数据
 func (ls *LikeService) StartUpdateTicker() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -357,16 +413,16 @@ func (ls *LikeService) StartUpdateTicker() {
 func (ls *LikeService) UpdateAllCount() {
 	Posts, _ := ls.pd.SearchAllPost()
 	for _, Post := range Posts {
-		ls.GetPostViews(Post.PostID)
-		ls.GetPostSaves(Post.PostID)
-		ls.GetPostSaves(Post.PostID)
+		ls.SyncPostLikeToDB(Post.PostID)
+		ls.SyncPostSaveToDB(Post.PostID)
+		ls.SyncPostViewToDB(Post.PostID)
 	}
 	Comments, _ := ls.pd.SearchAllComments()
 	for _, Comment := range Comments {
-		ls.GetCommentLikes(Comment.CommentID)
+		ls.SyncCommentLikeToDB(Comment.CommentID)
 	}
 	Replys, _ := ls.pd.SearchALLReplys()
 	for _, Reply := range Replys {
-		ls.GetReplyLikes(Reply.ReplyID)
+		ls.SyncReplyLikeToDB(Reply.ReplyID)
 	}
 }
