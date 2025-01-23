@@ -1,0 +1,1134 @@
+basePath: /api
+definitions:
+  models.Code:
+    properties:
+      code:
+        type: string
+    type: object
+  models.Comment:
+    properties:
+      body:
+        type: string
+      commenterID:
+        type: string
+      commenterName:
+        type: string
+      commenterURL:
+        type: string
+      commentid:
+        type: string
+      creatAt:
+        type: string
+      imageurl:
+        type: string
+      likeCount:
+        type: integer
+      postID:
+        type: string
+      reply:
+        items:
+          $ref: '#/definitions/models.Reply'
+        type: array
+    type: object
+  models.EmailAddress:
+    properties:
+      email:
+        type: string
+    type: object
+  models.Emailverify:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    type: object
+  models.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.PostMessage:
+    properties:
+      body:
+        type: string
+      comment:
+        items:
+          $ref: '#/definitions/models.Comment'
+        type: array
+      createAt:
+        type: string
+      likeCount:
+        type: integer
+      postID:
+        type: string
+      posterName:
+        type: string
+      posterURL:
+        type: string
+      posterid:
+        type: string
+      saveCount:
+        type: integer
+      tag:
+        type: string
+      title:
+        type: string
+      urls:
+        type: string
+      viewCount:
+        type: integer
+    type: object
+  models.Reply:
+    properties:
+      body:
+        type: string
+      commentID:
+        type: string
+      commentid:
+        type: string
+      creatAt:
+        type: string
+      imageurl:
+        type: string
+      likeCount:
+        type: integer
+      reply:
+        items:
+          $ref: '#/definitions/models.Reply'
+        type: array
+      replyURL:
+        type: string
+      replyerID:
+        type: string
+      replyerName:
+        type: string
+    type: object
+  models.Response:
+    properties:
+      message:
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      url:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 小知，你的校园助手
+  title: KnowEase API
+  version: "1.0"
+paths:
+  /api/{userid}/post/{postid}:
+    get:
+      consumes:
+      - application/json
+      description: 用户点开帖子详情页，获取帖子详情信息,帖子浏览量加一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取帖子详细信息
+      tags:
+      - 生活区-分区
+  /api/{userid}/post/{postid}/{commentid}/{replyid}:
+    delete:
+      consumes:
+      - application/json
+      description: 用户删除自己的回复
+      parameters:
+      - description: 回复ID
+        in: path
+        name: replyid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 删除回复
+      tags:
+      - 生活区-评论
+  /api/{userid}/post/{postid}/{commentid}/{replyid}/cancellike:
+    post:
+      consumes:
+      - application/json
+      description: 用户取消点赞回复，点赞数减一
+      parameters:
+      - description: 回复ID
+        in: path
+        name: replyid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户取消点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 取消点赞记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户取消点赞回复
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/{replyid}/like:
+    post:
+      consumes:
+      - application/json
+      description: 用户给回复点赞，评论数加一
+      parameters:
+      - description: 回复ID
+        in: path
+        name: replyid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 点赞记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户点赞回复
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/cancellike:
+    post:
+      consumes:
+      - application/json
+      description: 用户取消点赞评论，评论数减一
+      parameters:
+      - description: 评论ID
+        in: path
+        name: commentid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户取消点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 取消点赞记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户取消点赞评论
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/like:
+    post:
+      consumes:
+      - application/json
+      description: 用户给评论点赞，评论数加一
+      parameters:
+      - description: 评论ID
+        in: path
+        name: commentid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户收藏成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 收藏记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户点赞评论
+      tags:
+      - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/publishreply:
+    post:
+      consumes:
+      - application/json
+      description: 用户在帖子下面发布回复
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 成功响应信息以及评论信息
+          schema:
+            additionalProperties: true
+            type: object
+        "207":
+          description: 发布成功但消息发送失败
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发布回复
+      tags:
+      - 生活区-评论
+  /api/{userid}/post/{postid}/cancelsave:
+    post:
+      consumes:
+      - application/json
+      description: 用户取消收藏，收藏数减一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户取消收藏成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 取消收藏记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户取消收藏帖子
+      tags:
+      - 帖子-收藏
+  /api/{userid}/post/{postid}/deletecomment:
+    delete:
+      consumes:
+      - application/json
+      description: 用户在帖子下面发布评论
+      parameters:
+      - description: 评论ID
+        in: path
+        name: commentid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 删除评论
+      tags:
+      - 生活区-评论
+  /api/{userid}/post/{postid}/like:
+    post:
+      consumes:
+      - application/json
+      description: 用户取消点赞，点赞数减一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      - description: 用户D
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户取消点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 取消点赞记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户取消点赞帖子
+      tags:
+      - 帖子-点赞
+  /api/{userid}/post/{postid}/publishcomment:
+    post:
+      consumes:
+      - application/json
+      description: 用户在帖子下面发布评论
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 成功响应信息以及评论信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 发布失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发布评论
+      tags:
+      - 生活区-评论
+  /api/{userid}/post/campus:
+    get:
+      consumes:
+      - application/json
+      description: 获取生活区的校园标签页面的帖子信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 校园帖子查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 校园标签页面
+      tags:
+      - 生活区-分区
+  /api/{userid}/post/food:
+    get:
+      consumes:
+      - application/json
+      description: 获取生活区的美食标签页面的帖子信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 美食帖子查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 美食标签页面
+      tags:
+      - 生活区-分区
+  /api/{userid}/post/life:
+    get:
+      consumes:
+      - application/json
+      description: 获取生活区的生活标签页面的帖子信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 生活帖子查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 生活标签页面
+      tags:
+      - 生活区-分区
+  /api/{userid}/post/paint:
+    get:
+      consumes:
+      - application/json
+      description: 获取生活区的绘画标签页面的帖子信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 绘画帖子查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 绘画标签页面
+      tags:
+      - 生活区-分区
+  /api/{userid}/post/publish:
+    post:
+      consumes:
+      - application/json
+      description: 用户发帖，上传帖子正文、图片等信息。
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: 发帖内容
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/models.PostMessage'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 成功的响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 帖子发布失败！
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户发帖
+      tags:
+      - 生活区-发帖
+  /api/{userid}/post/recommend:
+    get:
+      consumes:
+      - application/json
+      description: 获取生活区的推荐标签页面的帖子信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及帖子信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 推荐帖子查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 推荐标签页面
+      tags:
+      - 生活区-分区
+  /api/{userid}/userpage/likecount:
+    get:
+      consumes:
+      - application/json
+      description: 用户给帖子点赞，点赞数加一
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 查询用户获赞数成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询用户获赞数失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取用户的总获赞数
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/likerecord:
+    get:
+      consumes:
+      - application/json
+      description: 在个人主页获取用户一个月（31天）内的点赞记录
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功信息以及历史点赞帖子
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 获取点赞记录失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取用户历史一个月内的历史点赞记录
+      tags:
+      - 个人主页-记录查询
+  /api/{userid}/userpage/message:
+    get:
+      consumes:
+      - application/json
+      description: 用户点开消息通知，获取未读的消息（被点赞，被评论），并把消息状态更新为已读
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "207":
+          description: 状态更新错误以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取未读消息通知
+      tags:
+      - 个人主页-消息通知
+  /api/{userid}/userpage/mypost/delete/{postid}:
+    delete:
+      consumes:
+      - application/json
+      description: 用户在个人主页选择删除帖子
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 删帖成功！
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 删除帖子及其相关信息失败！
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 删除帖子
+      tags:
+      - 个人主页-我的发布
+  /api/{userid}/userpage/mypost/deleteposts:
+    delete:
+      consumes:
+      - application/json
+      description: 用户在个人主页选择批量删除帖子
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 删帖成功！
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 删除帖子及其相关信息失败！
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 批量删除帖子
+      tags:
+      - 个人主页-删帖
+  /api/{userid}/userpage/saverecord:
+    get:
+      consumes:
+      - application/json
+      description: 在个人主页获取用户的历史收藏记录
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功信息以及历史收藏帖子
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 获取收藏记录失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取用户历史收藏记录
+      tags:
+      - 个人主页-记录查询
+  /api/{userid}/userpage/viewrecord:
+    get:
+      consumes:
+      - application/json
+      description: 在个人主页获取用户的历史浏览记录
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功信息以及历史浏览帖子
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 获取浏览记录失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取用户浏览记录
+      tags:
+      - 个人主页-记录查询
+  /api/forgetPassword/sendemail:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户的邮箱地址后发送验证码邮件
+      parameters:
+      - description: 邮箱地址
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.EmailAddress'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码邮件发送成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 发送验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发送验证码
+      tags:
+      - 忘记密码
+  /api/forgetPassword/sendemail/verifycode:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户提交的验证码并验证其有效性
+      parameters:
+      - description: 验证码信息
+        in: body
+        name: code
+        required: true
+        schema:
+          $ref: '#/definitions/models.Code'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码验证成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 检验验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 验证验证码
+      tags:
+      - 忘记密码
+  /api/forgetPassword/sendemail/verifycode/update:
+    post:
+      consumes:
+      - application/json
+      description: 通过邮箱进行修改密码
+      parameters:
+      - description: 邮箱和新密码
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 修改密码成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改密码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 修改密码
+      tags:
+      - 忘记密码
+  /api/login/bypassword:
+    post:
+      consumes:
+      - application/json
+      description: 通过密码和邮箱进行登录，检验成功后返回用户信息和认证 token
+      parameters:
+      - description: 用户注册信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册成功的响应，返回token和用户信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: 该用户未找到
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: 密码不正确
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 密码登录
+      tags:
+      - 用户登录
+  /api/login/sendemail:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户的邮箱地址后判断该用户是否注册并发送验证码邮件
+      parameters:
+      - description: 邮箱地址
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.EmailAddress'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码邮件发送成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: 该用户未注册
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 发送验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发送验证码
+      tags:
+      - 用户登录
+  /api/login/sendemail/verifycode:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户提交的验证码并验证其有效性,并返回登录信息
+      parameters:
+      - description: 验证码和邮箱信息
+        in: body
+        name: code
+        required: true
+        schema:
+          $ref: '#/definitions/models.Emailverify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码验证成功并返回token和用户信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 检验验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 验证验证码
+      tags:
+      - 用户登录
+  /api/posts/{postid}/{userid}/save:
+    post:
+      consumes:
+      - application/json
+      description: 用户给帖子收藏，收藏数加一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户收藏成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 收藏记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户收藏帖子
+      tags:
+      - 帖子-收藏
+  /api/register/sendemail:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户的邮箱地址后判断该用户是否已注册并发送验证码邮件
+      parameters:
+      - description: 邮箱地址
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.EmailAddress'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码邮件发送成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: 该用户已注册
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 发送验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发送验证码
+      tags:
+      - 用户注册
+  /api/register/sendemail/verifycode:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户提交的验证码并验证其有效性
+      parameters:
+      - description: 验证码信息
+        in: body
+        name: code
+        required: true
+        schema:
+          $ref: '#/definitions/models.Code'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码验证成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 检验验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 验证验证码
+      tags:
+      - 用户注册
+  /api/register/sendemail/verifycode/sendmessage:
+    post:
+      consumes:
+      - application/json
+      description: 接收用户的注册信息，生成默认用户名并完成注册，返回用户信息和认证 token
+      parameters:
+      - description: 用户注册信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册成功的响应，返回token和用户信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 数据库错误或其他服务器错误
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户注册
+      tags:
+      - 用户注册
+swagger: "2.0"
