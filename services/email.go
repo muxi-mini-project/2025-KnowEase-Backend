@@ -11,11 +11,11 @@ import (
 )
 
 type EmailService struct {
-	EmailDao *dao.EmailDao
-	UserDao  *dao.UserDao
+	EmailDao dao.EmailDaoInterface
+	UserDao  dao.UserDaoInterface
 }
 
-func NewEmailService(EmailDao *dao.EmailDao, UserDao *dao.UserDao) *EmailService {
+func NewEmailService(EmailDao dao.EmailDaoInterface, UserDao dao.UserDaoInterface) *EmailService {
 	return &EmailService{EmailDao: EmailDao, UserDao: UserDao}
 }
 func init() {

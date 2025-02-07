@@ -3,19 +3,25 @@ package services
 import (
 	"KnowEase/dao"
 	"KnowEase/models"
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
+	"github.com/qiniu/go-sdk/v7/storagev2/credentials"
+	"github.com/qiniu/go-sdk/v7/storagev2/uptoken"
+	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 )
 
 type PostService struct {
-	PostDao *dao.PostDao
-	LikeDao *dao.LikeDao
-	UserDao *dao.UserDao
+	PostDao dao.PostDaoInterface
+	LikeDao dao.LikeDaoInterface
+	UserDao dao.UserDaoInterface
 }
 
-func NewPostService(PostDao *dao.PostDao, LikeDao *dao.LikeDao, UserDao *dao.UserDao) *PostService {
+func NewPostService(PostDao dao.PostDaoInterface, LikeDao dao.LikeDaoInterface, UserDao dao.UserDaoInterface) *PostService {
 	return &PostService{PostDao: PostDao, LikeDao: LikeDao, UserDao: UserDao}
 }
 
@@ -105,7 +111,7 @@ func (ps *PostService) WeightedRecommendation(UserID string) ([]models.PostRecom
 	for i := 0; i < len(WeightedPosts); i++ {
 		for j := 0; j < len(WeightedPosts)-i; j++ {
 			if WeightedPosts[i].Weight < WeightedPosts[j].Weight {
-				WeightedPosts[i] = WeightedPosts[j]
+				WeightedPosts[i], WeightedPosts[j] = WeightedPosts[j], WeightedPosts[i]
 			}
 		}
 	}
@@ -146,8 +152,12 @@ func (ps *PostService) GetAllComment(PostID string) (*models.PostMessage, error)
 	return PostMessage, nil
 
 }
-func (pd *PostService) SearchPosterMessage(UserID string) (string, string, error) {
-	PosterMessage, err := pd.UserDao.GetUserFromID(UserID)
+
+func (ps *PostService) GetPostByID(PostID string) (*models.PostMessage, error) {
+	return ps.PostDao.SearchPostByID(PostID)
+}
+func (ps *PostService) SearchPosterMessage(UserID string) (string, string, error) {
+	PosterMessage, err := ps.UserDao.GetUserFromID(UserID)
 	if err != nil {
 		return "", "", err
 	}
@@ -155,8 +165,8 @@ func (pd *PostService) SearchPosterMessage(UserID string) (string, string, error
 }
 
 // 查询未读消息
-func (pd *PostService) SearchAllUnreadMessage(UserID string) ([]models.Message, error) {
-	Messages, err := pd.LikeDao.SearchUnreadMessage(UserID)
+func (ps *PostService) SearchAllUnreadMessage(UserID, Tag string) ([]models.Message, error) {
+	Messages, err := ps.LikeDao.SearchUnreadMessage(UserID, Tag)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -167,6 +177,40 @@ func (pd *PostService) SearchAllUnreadMessage(UserID string) ([]models.Message, 
 }
 
 // 更新消息状态
-func (pd *PostService) UpdateMessageStatus(UserID string) error {
-	return pd.LikeDao.UpdateMessageStatus(UserID)
+func (ps *PostService) UpdateMessageStatus(UserID, Tag string) {
+	err := ps.LikeDao.UpdateMessageStatus(UserID, Tag)
+	if err != nil {
+		fmt.Printf("update message error:%v", err)
+	}
+}
+func (ps *PostService) ReadConfig(filename string) (*models.QiNiuYunConfig, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	var config models.QiNiuYunConfig
+	decoder := yaml.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
+
+}
+func (ps *PostService) GetToken(config *models.QiNiuYunConfig) (string, error) {
+	accesskey := config.AccessKey
+	secretkey := config.SecretKey
+	bucket := config.Bucket
+	mac := credentials.NewCredentials(accesskey, secretkey)
+	putPolicy, err := uptoken.NewPutPolicy(bucket, time.Now().Add(1*time.Hour))
+	if err != nil {
+		return "", err
+	}
+	//获取上传凭证
+	upToken, err := uptoken.NewSigner(putPolicy, mac).GetUpToken(context.Background())
+	if err != nil {
+		return "", nil
+	}
+	return upToken, nil
 }

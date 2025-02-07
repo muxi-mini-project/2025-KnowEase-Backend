@@ -5,8 +5,8 @@ import (
 )
 
 type PostMessage struct {
-	PostID     string    `gorm:"not null"`
-	PosterID   string    `gorm:"primaryKey;not null" json:"posterid"`
+	PostID     string    `gorm:"not null;primaryKey"`
+	PosterID   string    `gorm:"not null" json:"posterid"`
 	LikeCount  int       `gorm:"default:0"`
 	SaveCount  int       `gorm:"default:0"`
 	ViewCount  int       `gorm:"default:0"`
@@ -25,6 +25,8 @@ type Message struct {
 	UserID    string `gorm:"not null"`
 	PosterURL string `grom:"type:varchar(255)"`
 	Message   string
+	PostID    string
+	Tag       string
 	Status    string `gorm:"not null"`
 	CreateAt  time.Time
 }
@@ -79,4 +81,11 @@ type PostData struct {
 	LikeCount int    `json:"like_count"`
 	SaveCount int    `json:"save_count"`
 	ViewCount int    `json:"view_count"`
+}
+
+type QiNiuYunConfig struct {
+	AccessKey string `yaml:"access_key"`
+	SecretKey string `yaml:"secret_key"`
+	Bucket    string `yaml:"bucket_name"`
+	Domain    string `yaml:"domain"`
 }

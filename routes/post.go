@@ -48,5 +48,9 @@ func (p *PostSvc) NewPostGroup(r *gin.Engine) {
 		posts.GET("/:userid/post/:postid/getcounts", p.lc.GetPostCounts)
 		posts.GET("/:userid/post/:postid/:commentid/getcounts", p.lc.GetCommentCounts)
 		posts.GET("/:userid/post/:postid/:commentid/:replyid/getcounts", p.lc.GetReplyCounts)
+		posts.GET("/getToken", p.pc.GetToken)
+		posts.GET("/:userid/post/:postid/getstatus", p.lc.GetPostStatus)
+		posts.GET("/:userid/post/:postid/:commentid/getstatus", p.lc.GetCommentStatus)
+		posts.GET("/:userid/post/:postid/:commentid/:replyid/getstatus", p.lc.GetReplyStatus)
 	}
 }

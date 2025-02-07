@@ -66,3 +66,27 @@ func (ts *TokenService) VerifyToken(tokenString string) (string, error) {
 	}
 	return role, nil
 }
+
+// 强制过期token
+func (ts *TokenService) InvalidateToken(tokenString string) (string, error) {
+	// 解析JWT token
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return "", fmt.Errorf("invalid token: %v", err)
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("invalid claims")
+	}
+	claims["exp"] = time.Now().Add(-time.Hour * 180).Unix()
+
+	// 重新签发过期的token
+	newtoken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := newtoken.SignedString([]byte("secret"))
+	if err != nil {
+		return "", fmt.Errorf("failed to sign new token: %v", err)
+	}
+
+	return t, nil
+}

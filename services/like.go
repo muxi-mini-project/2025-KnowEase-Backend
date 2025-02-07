@@ -13,12 +13,13 @@ import (
 )
 
 type LikeService struct {
-	ld *dao.LikeDao
-	pd *dao.PostDao
+	ld dao.LikeDaoInterface
+	pd dao.PostDaoInterface
+	ud dao.UserDaoInterface
 }
 
-func NewLikeService(ld *dao.LikeDao, pd *dao.PostDao) *LikeService {
-	return &LikeService{ld: ld, pd: pd}
+func NewLikeService(ld dao.LikeDaoInterface, pd dao.PostDaoInterface, ud dao.UserDaoInterface) *LikeService {
+	return &LikeService{ld: ld, pd: pd, ud: ud}
 }
 
 // 用户点赞帖子
@@ -28,6 +29,7 @@ func (ls *LikeService) LikePost(PostID, UserID string) error {
 		return fmt.Errorf("failed to find the poster:%w", err)
 	}
 	key := fmt.Sprintf("Post:%s:like_users", PostID)
+	fmt.Print(key)
 	//查找点赞记录以避免重复点赞
 	if utils.Client.SIsMember(utils.Ctx, key, UserID).Val() {
 		return fmt.Errorf("the user %s is already liked post %s", UserID, PostID)
@@ -85,7 +87,7 @@ func (ls *LikeService) GetPostLikes(PostID string) (int, error) {
 
 // 获取用户总获赞数
 func (ls *LikeService) GetUserLikes(UserID string) (int, error) {
-	key := fmt.Sprintf("Post:%s:likes", UserID)
+	key := fmt.Sprintf("Poster:%s:likes", UserID)
 	likescount, err := utils.Client.HGetAll(utils.Ctx, key).Result()
 	if err == redis.Nil {
 		return 0, nil
@@ -103,8 +105,6 @@ func (ls *LikeService) GetUserLikes(UserID string) (int, error) {
 		}
 		totalLikes += count
 	}
-	//更新用户总获赞数
-	go ls.ld.SyncUserLikesToDB(UserID, totalLikes)
 	return totalLikes, nil
 }
 
@@ -301,12 +301,14 @@ func (ls *LikeService) GetViewRecord(UserID string) ([]models.UserViewHistory, e
 }
 
 // 创建消息推送
-func (ls *LikeService) InitMessage(UserID, message, Userurl string) error {
+func (ls *LikeService) InitMessage(UserID, message, Userurl, Tag, PostID string) error {
 	var Message models.Message
 	Message.Status = "unread"
 	Message.UserID = UserID
 	Message.Message = message
 	Message.PosterURL = Userurl
+	Message.PostID = PostID
+	Message.Tag = Tag
 	return ls.ld.SyncMessageToDB(&Message)
 }
 
@@ -383,7 +385,7 @@ func (ls *LikeService) CancelReplyLike(ReplyID, UserID string) error {
 	return nil
 }
 
-// 获取评论的总点赞数
+// 获取回复的总点赞数
 func (ls *LikeService) GetReplyLikes(ReplyID string) (int, error) {
 	key := "Reply:likes"
 	savescount, err := utils.Client.HGet(utils.Ctx, key, ReplyID).Result()
@@ -410,6 +412,144 @@ func (ls *LikeService) StartUpdateTicker() {
 	}
 }
 
+// 获取用户粉丝列表
+func (ls *LikeService) GetUserFolower(UserID string) ([]string, error) {
+	return ls.ld.SearchUserFollowee(UserID)
+}
+
+// 用户关注操作
+func (ls *LikeService) Follow(UserID, FolloweeID string) error {
+	key := fmt.Sprintf("User:%s:followers", FolloweeID)
+	//查找关注记录以避免重复关注
+	if utils.Client.SIsMember(utils.Ctx, key, UserID).Val() {
+		return fmt.Errorf("the user %s is already followed user %s", UserID, FolloweeID)
+	}
+	//添加用户到粉丝合集
+	utils.Client.SAdd(utils.Ctx, key, UserID)
+	//更新用户关注数
+	key = "User:followees"
+	utils.Client.HIncrBy(utils.Ctx, key, UserID, 1)
+	Record := models.FollowMessage{
+		FollowerID: UserID,
+		FolloweeID: FolloweeID,
+	}
+	go ls.ld.SyncFollowMessageToDB(&Record)
+	key = "User:followers"
+	utils.Client.HIncrBy(utils.Ctx, key, FolloweeID, 1)
+	return nil
+}
+
+// 用户取消关注操作
+func (ls *LikeService) CancelFollow(UserID, FolloweeID string) error {
+	key := fmt.Sprintf("User:%s:followers", FolloweeID)
+	//查找关注记录以避免重复关注
+	if !utils.Client.SIsMember(utils.Ctx, key, UserID).Val() {
+		return fmt.Errorf("the user %s is not followed user %s", UserID, FolloweeID)
+	}
+	//用户移除粉丝合集
+	utils.Client.SRem(utils.Ctx, key, UserID)
+	//更新用户关注数
+	key = "User:followees"
+	utils.Client.HIncrBy(utils.Ctx, key, UserID, -1)
+	go ls.ld.DeleteFollowMessage(UserID)
+	key = "User:followers"
+	utils.Client.HIncrBy(utils.Ctx, key, FolloweeID, -1)
+	return nil
+}
+
+// 获取用户关注列表
+func (ls *LikeService) GetUserFoloweeList(UserID string) ([]models.Usermessage, error) {
+	var FolloweeMessages []models.Usermessage
+	UserIDs, err := ls.ld.SearchUserFollowee(UserID)
+	if err != nil {
+		return nil, err
+	}
+	for _, FolloweeID := range UserIDs {
+		FolloweeMessage, err := ls.ud.GetUserFromID(FolloweeID)
+		if err != nil {
+			fmt.Printf("get followee%s error:%v", FolloweeID, err)
+		} else {
+			FolloweeMessages = append(FolloweeMessages, *FolloweeMessage)
+		}
+	}
+	return FolloweeMessages, nil
+}
+
+// 获取用户粉丝列表
+func (ls *LikeService) GetUserFolowerList(UserID string) ([]models.Usermessage, error) {
+	var FolloweeMessages []models.Usermessage
+	UserIDs, err := ls.ld.SearchUserFollower(UserID)
+	if err != nil {
+		return nil, err
+	}
+	for _, FolloweeID := range UserIDs {
+		FolloweeMessage, err := ls.ud.GetUserFromID(FolloweeID)
+		if err != nil {
+			fmt.Printf("get followee%s error:%v", FolloweeID, err)
+		} else {
+			FolloweeMessages = append(FolloweeMessages, *FolloweeMessage)
+		}
+	}
+	return FolloweeMessages, nil
+}
+
+// 获取用户关注数和粉丝数
+func (ls *LikeService) GetFollowCount(UserID string) (int, int, error) {
+	var count1, count2 int
+	key1 := "User:followers"
+	key2 := "User:followees"
+	followerscount, err1 := utils.Client.HGet(utils.Ctx, key1, UserID).Result()
+	followeescount, err2 := utils.Client.HGet(utils.Ctx, key2, UserID).Result()
+	if err1 == redis.Nil {
+		count1 = 0
+	} else if err2 == redis.Nil {
+		count2 = 0
+	} else if err1 != nil || err2 != nil {
+		return 0, 0, fmt.Errorf("get follow counts error:%v\t%v", err1, err2)
+	}
+	count1, _ = strconv.Atoi(followerscount)
+	count2, _ = strconv.Atoi(followeescount)
+	return count1, count2, nil
+}
+
+// 关注数据同步
+func (ls *LikeService) SyncFollowCount(UserID string) {
+	followercount, followeecount, err := ls.GetFollowCount(UserID)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	err = ls.ld.SyncUserFollowersToDB(UserID, followercount)
+	if err != nil {
+		fmt.Print("update follower count error%w", err)
+	}
+	err = ls.ld.SyncUserFolloweesToDB(UserID, followeecount)
+	if err != nil {
+		fmt.Print("update followee count error%w", err)
+	}
+}
+
+// 获赞数据同步
+func (ls *LikeService) SyncLikeCount(UserID string) {
+	totalLikes, err := ls.GetUserLikes(UserID)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	err = ls.ld.SyncUserLikesToDB(UserID, totalLikes)
+	if err != nil {
+		fmt.Print("update user like count error%w", err)
+	}
+}
+
+// 根据id找评论
+func (ls *LikeService) SearchCommentByID(CommentID string) (string, string, error) {
+	return ls.ld.SearchCommentByID(CommentID)
+}
+
+// 根据id找评论
+func (ls *LikeService) SearchReplyByID(ReplyID string) (string, string, error) {
+	return ls.ld.SearchReplyByID(ReplyID)
+}
+
 func (ls *LikeService) UpdateAllCount() {
 	Posts, _ := ls.pd.SearchAllPost()
 	for _, Post := range Posts {
@@ -425,4 +565,39 @@ func (ls *LikeService) UpdateAllCount() {
 	for _, Reply := range Replys {
 		ls.SyncReplyLikeToDB(Reply.ReplyID)
 	}
+	Users, _ := ls.ud.SearchAllUser()
+	for _, User := range Users {
+		ls.SyncFollowCount(User)
+		ls.SyncLikeCount(User)
+	}
+}
+
+// 查询用户点赞帖子状态
+func (ls *LikeService) GetPostLikeStatus(UserID, PostID string) bool {
+	key := fmt.Sprintf("Post:%s:like_users", PostID)
+	return utils.Client.SIsMember(utils.Ctx, key, UserID).Val()
+}
+
+// 查询用户收藏帖子状态
+func (ls *LikeService) GetPostSaveStatus(UserID, PostID string) bool {
+	key := fmt.Sprintf("Post:%s:save_users", PostID)
+	return utils.Client.SIsMember(utils.Ctx, key, UserID).Val()
+}
+
+// 查询用户点赞评论状态
+func (ls *LikeService) GetCommentLikeStatus(UserID, CommentID string) bool {
+	key := fmt.Sprintf("comment:%s:like_users", CommentID)
+	return utils.Client.SIsMember(utils.Ctx, key, UserID).Val()
+}
+
+// 查询用户点赞回复状态
+func (ls *LikeService) GetReplyLikeStatus(UserID, ReplyID string) bool {
+	key := fmt.Sprintf("reply:%s:like_users", ReplyID)
+	return utils.Client.SIsMember(utils.Ctx, key, UserID).Val()
+}
+
+// 查询用户关注状态
+func (ls *LikeService) GetFollowStatus(UserID, FolloweeID string) bool {
+	key := fmt.Sprintf("User:%s:followers", FolloweeID)
+	return utils.Client.SIsMember(utils.Ctx, key, UserID).Val()
 }

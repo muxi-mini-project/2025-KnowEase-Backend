@@ -277,3 +277,212 @@ func (u *UserControllers) ChangePassword(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, models.Write("密码修改成功！"))
 }
+
+// @Summary 退出登录
+// @Description 退出登录并将token强制过期
+// @Tags 个人主页-退出登录
+// @Accept application/json
+// @Produce application/json
+// @Param Authorization header string true "Bearer token"
+// @Success 201 {object} models.Response "登出成功"
+// @Failure 400 {object} models.Response "token获取失败"
+// @Failure 500 {object} models.Response "服务器错误"
+// @Router /api/logout [post]
+func (uc *UserControllers) Logout(c *gin.Context) {
+	// 从请求头中获取token
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		c.JSON(http.StatusBadRequest, models.Write("token获取失败！"))
+		return
+	}
+	if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		tokenString = tokenString[7:]
+	}
+	_, err := uc.TokenService.InvalidateToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
+		return
+	}
+	c.JSON(http.StatusCreated, models.Write("登出成功！"))
+}
+
+// @Summary 修改个人主页背景
+// @Description 修改用户个人主页的背景图片
+// @Tags 个人主页
+// @Accept  json
+// @Produce  json
+// @Param userbackground body models.User true "新背景"
+// @Param userid path string true "用户ID"
+// @Success 201 {object} map[string]interface{} "响应成功信息以及背景图片的url"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 500 {object} models.Response "修改背景失败"
+// @Router /api/{userid}/userpage/alterbackground [post]
+func (uc *UserControllers) ChangeUserBackground(c *gin.Context) {
+	var UserBackground models.User
+	if err := c.BindJSON(&UserBackground); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	UserBackground.ID = c.Param("userid")
+	if UserBackground.ID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := uc.UserService.ChangeUserBackground(UserBackground.ID, UserBackground.PageBackgroundURL); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("修改背景失败！"))
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "修改成功！", "newbackground": UserBackground.PageBackgroundURL})
+}
+
+// @Summary 修改个人主页头像
+// @Description 修改用户个人主页的头像
+// @Tags 个人主页
+// @Accept  json
+// @Produce  json
+// @Param user body models.User true "新头像"
+// @Param userid path string true "用户ID"
+// @Success 201 {object} map[string]interface{} "响应成功信息以及新头像的url"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 500 {object} models.Response "修改头像失败"
+// @Router /api/{userid}/userpage/alterimage [post]
+func (uc *UserControllers) ChangeUserPicture(c *gin.Context) {
+	var User models.User
+	if err := c.BindJSON(&User); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	User.ID = c.Param("userid")
+	if User.ID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := uc.UserService.ChangeUserPicture(User.ID, User.ImageURL); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("更新用户头像失败"))
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"Message": "更新用户头像成功！", "NewImageURL": User.ImageURL})
+
+}
+
+// @Summary 修改个人主页密码
+// @Description 修改用户个人主页的密码
+// @Tags 个人主页
+// @Accept  json
+// @Produce  json
+// @Param user body models.User true "新密码"
+// @Param userid path string true "用户ID"
+// @Success 201 {object} models.Response "修改密码成功"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 500 {object} models.Response "修改密码成功"
+// @Router /api/{userid}/userpage/alterpassword [post]
+func (uc *UserControllers) ChangeUserPassword(c *gin.Context) {
+	var User models.User
+	if err := c.BindJSON(&User); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	User.ID = c.Param("userid")
+	if User.ID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := uc.UserService.ChangeUserPassword(User.ID, User.Password); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
+		return
+	}
+	c.JSON(http.StatusCreated, models.Write("修改密码成功"))
+}
+
+// Sendemail 发送验证码邮件-修改邮箱
+// @Summary 发送验证码
+// @Description 绑定用户新邮箱地址
+// @Tags 个人主页
+// @Accept application/json
+// @Produce application/json
+// @Param email body models.EmailAddress true "邮箱地址"
+// @Success 201 {object} models.Response "验证码邮件发送成功"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 500 {object} models.Response "发送验证码失败"
+// @Router /api/{userid}/userpage/sendemail [post]
+func (u *UserControllers) AlterSendemail(c *gin.Context) {
+	var email models.EmailAddress
+	if err := c.BindJSON(&email); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := u.EmailService.SendEmailVerification(email.Email); err != nil {
+		response := models.Write(err.Error())
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	c.JSON(http.StatusOK, models.Write("验证码邮件发送成功！"))
+}
+
+// VerifyEmail 验证验证码-修改邮箱
+// @Summary 验证验证码
+// @Description 验证新邮箱地址可用性，并修改用户信息
+// @Tags 个人主页
+// @Accept application/json
+// @Produce application/json
+// @Param code body models.Emailverify true "验证码和邮箱信息"
+// @Param userid path string true "用户ID"
+// @Success 201 {object} map[string]interface{} "验证码验证成功并返回新邮箱地址"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 409 {object} models.Response "检验验证码失败"
+// @Failure 500 {object} models.Response "修改邮箱地址失败"
+// @Router /api/{userid}/userpage/alteremail [post]
+func (u *UserControllers) ChangeUserEmail(c *gin.Context) {
+	var code models.Emailverify
+	if err := c.BindJSON(&code); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := u.EmailService.VerifyCode(code.Code); err != nil {
+		response := err.Error()
+		c.JSON(http.StatusConflict, response)
+		return
+	}
+	if err := u.UserService.ChangeUserEmail(UserID, code.Email); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("更新邮箱地址失败"))
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "修改密码成功!", "newEmail": code.Email})
+
+}
+
+// @Summary 修改用户名
+// @Description 修改用户个人用户名
+// @Tags 个人主页
+// @Accept  json
+// @Produce  json
+// @Param user body models.User true "新名字"
+// @Param userid path string true "用户ID"
+// @Success 201 {object} map[string]interface{} "响应成功信息以及新名称"
+// @Failure 400 {object} models.Response "输入无效"
+// @Failure 500 {object} models.Response "修改用户名失败"
+// @Router /api/{userid}/userpage/alterusername [post]
+func (uc *UserControllers) ChangeUsername(c *gin.Context) {
+	var User models.User
+	if err := c.BindJSON(&User); err != nil {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	User.ID = c.Param("userid")
+	if User.ID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	if err := uc.UserService.ChangeUsername(User.ID, User.Username); err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("更新用户名失败"))
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"Message": "更新用户名成功！", "NewUsername": User.Username})
+
+}
+
