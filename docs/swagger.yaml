@@ -112,10 +112,18 @@ definitions:
     type: object
   models.User:
     properties:
+      backgroundURL:
+        type: string
       email:
         type: string
+      followeeCount:
+        type: integer
+      followerCount:
+        type: integer
       id:
         type: string
+      likeCount:
+        type: integer
       password:
         type: string
       role:
@@ -132,6 +140,111 @@ info:
   title: KnowEase API
   version: "1.0"
 paths:
+  /api/{userid}/commentmessage:
+    get:
+      consumes:
+      - application/json
+      description: 用户点开消息通知，获取未读的消息(帖子，评论被评论），并把消息状态更新为已读
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "207":
+          description: 状态更新错误以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取未读消息通知-评论
+      tags:
+      - 消息-评论
+  /api/{userid}/followmessage:
+    get:
+      consumes:
+      - application/json
+      description: 用户点开消息通知，获取未读的消息（被关注），并把消息状态更新为已读
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "207":
+          description: 状态更新错误以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取未读消息通知-关注
+      tags:
+      - 消息-关注
+  /api/{userid}/likemessage:
+    get:
+      consumes:
+      - application/json
+      description: 用户点开消息通知，获取未读的消息(帖子，评论被点赞），并把消息状态更新为已读
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "207":
+          description: 状态更新错误以及消息信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取未读消息通知-点赞
+      tags:
+      - 消息-点赞
   /api/{userid}/post/{postid}:
     get:
       consumes:
@@ -251,6 +364,37 @@ paths:
       summary: 获取回复点赞数
       tags:
       - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/{replyid}/getstatus:
+    get:
+      consumes:
+      - application/json
+      description: 获取回复点赞状态
+      parameters:
+      - description: 回复ID
+        in: path
+        name: replyid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 回复状态信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取回复点赞状态
+      tags:
+      - 生活区
   /api/{userid}/post/{postid}/{commentid}/{replyid}/like:
     post:
       consumes:
@@ -265,6 +409,11 @@ paths:
       - description: 用户ID
         in: path
         name: userid
+        required: true
+        type: string
+      - description: 帖子ID
+        in: path
+        name: postid
         required: true
         type: string
       produces:
@@ -345,6 +494,37 @@ paths:
       summary: 获取评论点赞数
       tags:
       - 帖子-评论
+  /api/{userid}/post/{postid}/{commentid}/getstatus:
+    get:
+      consumes:
+      - application/json
+      description: 获取评论点赞状态
+      parameters:
+      - description: 评论ID
+        in: path
+        name: commentid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 评论状态信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取评论点赞状态
+      tags:
+      - 生活区
   /api/{userid}/post/{postid}/{commentid}/like:
     post:
       consumes:
@@ -359,6 +539,11 @@ paths:
       - description: 用户ID
         in: path
         name: userid
+        required: true
+        type: string
+      - description: 帖子ID
+        in: path
+        name: postid
         required: true
         type: string
       produces:
@@ -418,6 +603,40 @@ paths:
       summary: 发布回复
       tags:
       - 生活区-评论
+  /api/{userid}/post/{postid}/cancellike:
+    post:
+      consumes:
+      - application/json
+      description: 用户取消点赞，点赞数减一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      - description: 用户D
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户取消点赞成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 取消点赞记录上传失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 用户取消点赞帖子
+      tags:
+      - 帖子-点赞
   /api/{userid}/post/{postid}/cancelsave:
     post:
       consumes:
@@ -507,18 +726,49 @@ paths:
       summary: 获取帖子相关数值
       tags:
       - 帖子
-  /api/{userid}/post/{postid}/like:
-    post:
+  /api/{userid}/post/{postid}/getstatus:
+    get:
       consumes:
       - application/json
-      description: 用户取消点赞，点赞数减一
+      description: 获取帖子点赞收藏状态
       parameters:
       - description: 帖子ID
         in: path
         name: postid
         required: true
         type: string
-      - description: 用户D
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 帖子状态信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取帖子点赞收藏状态
+      tags:
+      - 生活区
+  /api/{userid}/post/{postid}/like:
+    post:
+      consumes:
+      - application/json
+      description: 用户给帖子点赞，点赞数加一
+      parameters:
+      - description: 帖子ID
+        in: path
+        name: postid
+        required: true
+        type: string
+      - description: 用户ID
         in: path
         name: userid
         required: true
@@ -527,7 +777,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: 用户取消点赞成功
+          description: 用户点赞成功
           schema:
             $ref: '#/definitions/models.Response'
         "400":
@@ -535,10 +785,10 @@ paths:
           schema:
             $ref: '#/definitions/models.Response'
         "500":
-          description: 取消点赞记录上传失败
+          description: 点赞记录上传失败
           schema:
             $ref: '#/definitions/models.Response'
-      summary: 用户取消点赞帖子
+      summary: 用户点赞帖子
       tags:
       - 帖子-点赞
   /api/{userid}/post/{postid}/publishcomment:
@@ -762,11 +1012,297 @@ paths:
       summary: 推荐标签页面
       tags:
       - 生活区-分区
-  /api/{userid}/userpage/likecount:
+  /api/{userid}/userpage/{followid}/cancelfollow:
+    post:
+      consumes:
+      - application/json
+      description: 取消关注用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: 被关注用户ID
+        in: path
+        name: followid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 取消关注成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: 用户未关注
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 取消关注用户
+      tags:
+      - 关注
+  /api/{userid}/userpage/{followid}/follow:
+    post:
+      consumes:
+      - application/json
+      description: 关注用户并上传关注消息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      - description: 被关注用户ID
+        in: path
+        name: followid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 关注成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "207":
+          description: 消息上传失败，关注成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: 用户已关注
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 关注用户
+      tags:
+      - 关注
+  /api/{userid}/userpage/{followid}/getstatus:
     get:
       consumes:
       - application/json
-      description: 用户给帖子点赞，点赞数加一
+      description: 获取关注状态
+      parameters:
+      - description: 关注人ID
+        in: path
+        name: followid
+        required: true
+        type: string
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 关注状态信息
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效，请重试!
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取关注状态
+      tags:
+      - 生活区
+  /api/{userid}/userpage/alterbackground:
+    post:
+      consumes:
+      - application/json
+      description: 修改用户个人主页的背景图片
+      parameters:
+      - description: 新背景
+        in: body
+        name: userbackground
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 响应成功信息以及背景图片的url
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改背景失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 修改个人主页背景
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/alteremail:
+    post:
+      consumes:
+      - application/json
+      description: 验证新邮箱地址可用性，并修改用户信息
+      parameters:
+      - description: 验证码和邮箱信息
+        in: body
+        name: code
+        required: true
+        schema:
+          $ref: '#/definitions/models.Emailverify'
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 验证码验证成功并返回新邮箱地址
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: 检验验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改邮箱地址失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 验证验证码
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/alterimage:
+    post:
+      consumes:
+      - application/json
+      description: 修改用户个人主页的头像
+      parameters:
+      - description: 新头像
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 响应成功信息以及新头像的url
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改头像失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 修改个人主页头像
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/alterpassword:
+    post:
+      consumes:
+      - application/json
+      description: 修改用户个人主页的密码
+      parameters:
+      - description: 新密码
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 修改密码成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改密码成功
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 修改个人主页密码
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/alterusername:
+    post:
+      consumes:
+      - application/json
+      description: 修改用户个人用户名
+      parameters:
+      - description: 新名字
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 响应成功信息以及新名称
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 修改用户名失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 修改用户名
+      tags:
+      - 个人主页
+  /api/{userid}/userpage/count:
+    get:
+      consumes:
+      - application/json
+      description: 在主页获取用户获赞数，关注数，粉丝数
       parameters:
       - description: 用户ID
         in: path
@@ -777,7 +1313,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: 查询用户获赞数成功
+          description: 查询用户数据成功
           schema:
             $ref: '#/definitions/models.Response'
         "400":
@@ -785,12 +1321,72 @@ paths:
           schema:
             $ref: '#/definitions/models.Response'
         "500":
-          description: 查询用户获赞数失败
+          description: 查询用户数据失败
           schema:
             $ref: '#/definitions/models.Response'
-      summary: 获取用户的总获赞数
+      summary: 获取用户数据
       tags:
       - 个人主页
+  /api/{userid}/userpage/followeelist:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户关注列表
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 响应信息和关注列表
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 获取关注列表失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 关注列表
+      tags:
+      - 个人主页-关注列表
+  /api/{userid}/userpage/followerlist:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户粉丝列表
+      parameters:
+      - description: 用户ID
+        in: path
+        name: userid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 响应信息和粉丝列表
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 获取粉丝列表失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 粉丝列表
+      tags:
+      - 个人主页-关注列表
   /api/{userid}/userpage/likerecord:
     get:
       consumes:
@@ -821,41 +1417,6 @@ paths:
       summary: 获取用户历史一个月内的历史点赞记录
       tags:
       - 个人主页-记录查询
-  /api/{userid}/userpage/message:
-    get:
-      consumes:
-      - application/json
-      description: 用户点开消息通知，获取未读的消息（被点赞，被评论），并把消息状态更新为已读
-      parameters:
-      - description: 帖子ID
-        in: path
-        name: userid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功响应信息以及消息信息
-          schema:
-            additionalProperties: true
-            type: object
-        "207":
-          description: 状态更新错误以及消息信息
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: 输入无效，请重试!
-          schema:
-            $ref: '#/definitions/models.Response'
-        "500":
-          description: 查询失败
-          schema:
-            $ref: '#/definitions/models.Response'
-      summary: 获取未读消息通知
-      tags:
-      - 个人主页-消息通知
   /api/{userid}/userpage/mypost/delete/{postid}:
     delete:
       consumes:
@@ -944,6 +1505,36 @@ paths:
       summary: 获取用户历史收藏记录
       tags:
       - 个人主页-记录查询
+  /api/{userid}/userpage/sendemail:
+    post:
+      consumes:
+      - application/json
+      description: 绑定用户新邮箱地址
+      parameters:
+      - description: 邮箱地址
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/models.EmailAddress'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 验证码邮件发送成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: 输入无效
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 发送验证码失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 发送验证码
+      tags:
+      - 个人主页
   /api/{userid}/userpage/viewrecord:
     get:
       consumes:
@@ -1064,6 +1655,26 @@ paths:
       summary: 修改密码
       tags:
       - 忘记密码
+  /api/getToken:
+    get:
+      consumes:
+      - application/json
+      description: 获取token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功响应信息以及token信息
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 获取配置文件失败或生成token失败
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 获取图床token
+      tags:
+      - 图床
   /api/login/bypassword:
     post:
       consumes:
@@ -1164,6 +1775,35 @@ paths:
       summary: 验证验证码
       tags:
       - 用户登录
+  /api/logout:
+    post:
+      consumes:
+      - application/json
+      description: 退出登录并将token强制过期
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 登出成功
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: token获取失败
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: 退出登录
+      tags:
+      - 个人主页-退出登录
   /api/posts/{postid}/{userid}/save:
     post:
       consumes:

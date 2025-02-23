@@ -153,6 +153,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/getToken": {
+            "get": {
+                "description": "获取token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "图床"
+                ],
+                "summary": "获取图床token",
+                "responses": {
+                    "200": {
+                        "description": "成功响应信息以及token信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "获取配置文件失败或生成token失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login/bypassword": {
             "post": {
                 "description": "通过密码和邮箱进行登录，检验成功后返回用户信息和认证 token",
@@ -298,6 +328,50 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "检验验证码失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "description": "退出登录并将token强制过期",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页-退出登录"
+                ],
+                "summary": "退出登录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "登出成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "token获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -494,6 +568,162 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "数据库错误或其他服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/commentmessage": {
+            "get": {
+                "description": "用户点开消息通知，获取未读的消息(帖子，评论被评论），并把消息状态更新为已读",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息-评论"
+                ],
+                "summary": "获取未读消息通知-评论",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功响应信息以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "207": {
+                        "description": "状态更新错误以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "查询失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/followmessage": {
+            "get": {
+                "description": "用户点开消息通知，获取未读的消息（被关注），并把消息状态更新为已读",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息-关注"
+                ],
+                "summary": "获取未读消息通知-关注",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功响应信息以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "207": {
+                        "description": "状态更新错误以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "查询失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/likemessage": {
+            "get": {
+                "description": "用户点开消息通知，获取未读的消息(帖子，评论被点赞），并把消息状态更新为已读",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息-点赞"
+                ],
+                "summary": "获取未读消息通知-点赞",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功响应信息以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "207": {
+                        "description": "状态更新错误以及消息信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "查询失败",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -825,6 +1055,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/{userid}/post/{postid}/cancellike": {
+            "post": {
+                "description": "用户取消点赞，点赞数减一",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "帖子-点赞"
+                ],
+                "summary": "用户取消点赞帖子",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "帖子ID",
+                        "name": "postid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户D",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "用户取消点赞成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "取消点赞记录上传失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/{userid}/post/{postid}/cancelsave": {
             "post": {
                 "description": "用户取消收藏，收藏数减一",
@@ -959,9 +1240,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/{userid}/post/{postid}/like": {
-            "post": {
-                "description": "用户取消点赞，点赞数减一",
+        "/api/{userid}/post/{postid}/getstatus": {
+            "get": {
+                "description": "获取帖子点赞收藏状态",
                 "consumes": [
                     "application/json"
                 ],
@@ -969,9 +1250,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "帖子-点赞"
+                    "生活区"
                 ],
-                "summary": "用户取消点赞帖子",
+                "summary": "获取帖子点赞收藏状态",
                 "parameters": [
                     {
                         "type": "string",
@@ -982,7 +1263,53 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "用户D",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "帖子状态信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/post/{postid}/like": {
+            "post": {
+                "description": "用户给帖子点赞，点赞数加一",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "帖子-点赞"
+                ],
+                "summary": "用户点赞帖子",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "帖子ID",
+                        "name": "postid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
                         "name": "userid",
                         "in": "path",
                         "required": true
@@ -990,7 +1317,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "用户取消点赞成功",
+                        "description": "用户点赞成功",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1002,7 +1329,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "取消点赞记录上传失败",
+                        "description": "点赞记录上传失败",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1152,6 +1479,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/{userid}/post/{postid}/{commentid}/getstatus": {
+            "get": {
+                "description": "获取评论点赞状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生活区"
+                ],
+                "summary": "获取评论点赞状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "评论ID",
+                        "name": "commentid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "评论状态信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/{userid}/post/{postid}/{commentid}/like": {
             "post": {
                 "description": "用户给评论点赞，评论数加一",
@@ -1177,6 +1550,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "用户ID",
                         "name": "userid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "帖子ID",
+                        "name": "postid",
                         "in": "path",
                         "required": true
                     }
@@ -1395,6 +1775,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/{userid}/post/{postid}/{commentid}/{replyid}/getstatus": {
+            "get": {
+                "description": "获取回复点赞状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生活区"
+                ],
+                "summary": "获取回复点赞状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "回复ID",
+                        "name": "replyid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "回复状态信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/{userid}/post/{postid}/{commentid}/{replyid}/like": {
             "post": {
                 "description": "用户给回复点赞，评论数加一",
@@ -1422,6 +1848,13 @@ const docTemplate = `{
                         "name": "userid",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "帖子ID",
+                        "name": "postid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1446,9 +1879,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/{userid}/userpage/likecount": {
-            "get": {
-                "description": "用户给帖子点赞，点赞数加一",
+        "/api/{userid}/userpage/alterbackground": {
+            "post": {
+                "description": "修改用户个人主页的背景图片",
                 "consumes": [
                     "application/json"
                 ],
@@ -1458,8 +1891,17 @@ const docTemplate = `{
                 "tags": [
                     "个人主页"
                 ],
-                "summary": "获取用户的总获赞数",
+                "summary": "修改个人主页背景",
                 "parameters": [
+                    {
+                        "description": "新背景",
+                        "name": "userbackground",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
                     {
                         "type": "string",
                         "description": "用户ID",
@@ -1469,8 +1911,176 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "查询用户获赞数成功",
+                    "201": {
+                        "description": "响应成功信息以及背景图片的url",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "修改背景失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/alteremail": {
+            "post": {
+                "description": "验证新邮箱地址可用性，并修改用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "验证验证码",
+                "parameters": [
+                    {
+                        "description": "验证码和邮箱信息",
+                        "name": "code",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Emailverify"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "验证码验证成功并返回新邮箱地址",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "检验验证码失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "修改邮箱地址失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/alterimage": {
+            "post": {
+                "description": "修改用户个人主页的头像",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "修改个人主页头像",
+                "parameters": [
+                    {
+                        "description": "新头像",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "响应成功信息以及新头像的url",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "修改头像失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/alterpassword": {
+            "post": {
+                "description": "修改用户个人主页的密码",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "修改个人主页密码",
+                "parameters": [
+                    {
+                        "description": "新密码",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "修改密码成功",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1482,7 +2092,195 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "查询用户获赞数失败",
+                        "description": "修改密码成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/alterusername": {
+            "post": {
+                "description": "修改用户个人用户名",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "修改用户名",
+                "parameters": [
+                    {
+                        "description": "新名字",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "响应成功信息以及新名称",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "修改用户名失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/count": {
+            "get": {
+                "description": "在主页获取用户获赞数，关注数，粉丝数",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "获取用户数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "查询用户数据成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "查询用户数据失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/followeelist": {
+            "get": {
+                "description": "获取用户关注列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页-关注列表"
+                ],
+                "summary": "关注列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "响应信息和关注列表",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "获取关注列表失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/followerlist": {
+            "get": {
+                "description": "获取用户粉丝列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页-关注列表"
+                ],
+                "summary": "粉丝列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "响应信息和粉丝列表",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "获取粉丝列表失败",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1528,58 +2326,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "获取点赞记录失败",
-                        "schema": {
-                            "$ref": "#/definitions/models.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/{userid}/userpage/message": {
-            "get": {
-                "description": "用户点开消息通知，获取未读的消息（被点赞，被评论），并把消息状态更新为已读",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "个人主页-消息通知"
-                ],
-                "summary": "获取未读消息通知",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "帖子ID",
-                        "name": "userid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功响应信息以及消息信息",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "207": {
-                        "description": "状态更新错误以及消息信息",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "输入无效，请重试!",
-                        "schema": {
-                            "$ref": "#/definitions/models.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "查询失败",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1720,6 +2466,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/{userid}/userpage/sendemail": {
+            "post": {
+                "description": "绑定用户新邮箱地址",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "个人主页"
+                ],
+                "summary": "发送验证码",
+                "parameters": [
+                    {
+                        "description": "邮箱地址",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.EmailAddress"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "验证码邮件发送成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "发送验证码失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/{userid}/userpage/viewrecord": {
             "get": {
                 "description": "在个人主页获取用户的历史浏览记录",
@@ -1758,6 +2550,160 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "获取浏览记录失败",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/{followid}/cancelfollow": {
+            "post": {
+                "description": "取消关注用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "关注"
+                ],
+                "summary": "取消关注用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "被关注用户ID",
+                        "name": "followid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "取消关注成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "用户未关注",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/{followid}/follow": {
+            "post": {
+                "description": "关注用户并上传关注消息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "关注"
+                ],
+                "summary": "关注用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "被关注用户ID",
+                        "name": "followid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "关注成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "207": {
+                        "description": "消息上传失败，关注成功",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "用户已关注",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/{userid}/userpage/{followid}/getstatus": {
+            "get": {
+                "description": "获取关注状态",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "生活区"
+                ],
+                "summary": "获取关注状态",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "关注人ID",
+                        "name": "followid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "关注状态信息",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "输入无效，请重试!",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -1939,11 +2885,23 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "backgroundURL": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
+                "followeeCount": {
+                    "type": "integer"
+                },
+                "followerCount": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
+                },
+                "likeCount": {
+                    "type": "integer"
                 },
                 "password": {
                     "type": "string"

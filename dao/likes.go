@@ -75,7 +75,7 @@ func (ld *LikeDao) SyncPostViewToDB(PostID string, ViewCount int) error {
 
 // 将用户获赞数数据写入数据库
 func (ld *LikeDao) SyncUserLikesToDB(UserID string, LikeCount int) error {
-	err := ld.db.Model(&models.UserLikes{}).Where("user_id = ?", UserID).Update("like_count", LikeCount).Error
+	err := ld.db.Model(&models.User{}).Where("id = ?", UserID).Update("like_count", LikeCount).Error
 	return err
 }
 
@@ -166,14 +166,70 @@ func (ld *LikeDao) SyncMessageToDB(Body *models.Message) error {
 }
 
 // 查询用户所有未读消息
-func (ld *LikeDao) SearchUnreadMessage(UserID string) ([]models.Message, error) {
+func (ld *LikeDao) SearchUnreadMessage(UserID,Tag string) ([]models.Message, error) {
 	var Messages []models.Message
-	err := ld.db.Model(&models.Message{}).Where("user_id = ? AND status = ?", UserID, "unread").Find(&Messages).Error
+	err := ld.db.Model(&models.Message{}).Where("user_id = ? AND status = ? AND tag = ?", UserID, "unread",Tag).Find(&Messages).Error
 	return Messages, err
 }
 
 // 更新消息状态
-func (ld *LikeDao) UpdateMessageStatus(UserID string) error {
-	err := ld.db.Model(&models.Message{}).Where("user_id = ?", UserID).Update("status", "read").Error
+func (ld *LikeDao) UpdateMessageStatus(UserID,Tag string) error {
+	err := ld.db.Model(&models.Message{}).Where("user_id = ? AND tag = ?", UserID,Tag).Update("status", "read").Error
 	return err
+}
+
+// 将用户粉丝数数据写入数据库
+func (ld *LikeDao) SyncUserFollowersToDB(UserID string, FollowerCount int) error {
+	err := ld.db.Model(&models.User{}).Where("id = ?", UserID).Update("follower_count", FollowerCount).Error
+	return err
+}
+
+// 将用户关注数数据写入数据库
+func (ld *LikeDao) SyncUserFolloweesToDB(UserID string, FolloweeCount int) error {
+	err := ld.db.Model(&models.User{}).Where("id = ?", UserID).Update("followee_count", FolloweeCount).Error
+	return err
+}
+
+// 将关注信息写入数据库
+func (ld *LikeDao) SyncFollowMessageToDB(FollowMessage *models.FollowMessage) error {
+	return ld.db.Create(FollowMessage).Error
+}
+
+// 将关注信息从数据库里删除
+func (ld *LikeDao) DeleteFollowMessage(UserID string) error {
+	return ld.db.Delete(&models.FollowMessage{}, "follower_id = ?", UserID).Error
+}
+
+// 获取用户关注列表
+func (ld *LikeDao) SearchUserFollowee(UserID string) ([]string, error) {
+	var FolloweeIDs []string
+	err := ld.db.Model(&models.FollowMessage{}).Where("follower_id", UserID).Select("followee_id").Find(&FolloweeIDs).Error
+	return FolloweeIDs, err
+}
+
+// 获取用户粉丝列表
+func (ld *LikeDao) SearchUserFollower(UserID string) ([]string, error) {
+	var FollowerIDs []string
+	err := ld.db.Model(&models.FollowMessage{}).Where("followee_id", UserID).Select("follower_id").Find(&FollowerIDs).Error
+	return FollowerIDs, err
+}
+
+// 根据id找评论
+func (ld *LikeDao) SearchCommentByID(CommentID string) (string, string, error) {
+	var Comment models.Comment
+	err := ld.db.Model(&models.Comment{}).Where("comment_id = ?", CommentID).First(&Comment).Error
+	if err != nil {
+		return "", "", err
+	}
+	return Comment.CommenterID, Comment.Body, nil
+}
+
+// 根据id找回复
+func (ld *LikeDao) SearchReplyByID(ReplyID string) (string, string, error) {
+	var Reply models.Reply
+	err := ld.db.Model(&models.Reply{}).Where("reply_id = ?", ReplyID).First(&Reply).Error
+	if err != nil {
+		return "", "", err
+	}
+	return Reply.ReplyerID, Reply.Body, nil
 }

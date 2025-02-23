@@ -9,10 +9,10 @@ import (
 )
 
 type UserService struct {
-	UserDao *dao.UserDao
+	UserDao dao.UserDaoInterface
 }
 
-func NewUserService(UserDao *dao.UserDao) *UserService {
+func NewUserService(UserDao dao.UserDaoInterface) *UserService {
 	return &UserService{UserDao: UserDao}
 }
 
@@ -70,4 +70,42 @@ func (us *UserService) ChangePassword(user models.Login) error {
 		return fmt.Errorf("failed to change password")
 	}
 	return nil
+}
+
+// 修改用户个人主页背景
+func (us *UserService) ChangeUserBackground(UserID, Newbackground string) error {
+	return us.UserDao.ChangeUserBackground(UserID, Newbackground)
+}
+
+// 修改个人头像
+func (us *UserService) ChangeUserPicture(UserID, NewPicture string) error {
+	return us.UserDao.ChangeUserPicture(UserID, NewPicture)
+
+}
+
+// 修改密码
+func (us *UserService) ChangeUserPassword(UserID, NewPassword string) error {
+	EncryptedPassword, err := EncryptPassword(NewPassword)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt password")
+	}
+	if err := us.UserDao.ChangeUserPassword(UserID, EncryptedPassword); err != nil {
+		return fmt.Errorf("failed to change password")
+	}
+	return nil
+}
+
+// 修改用户邮箱
+func (us *UserService) ChangeUserEmail(UserID, NewEmail string) error {
+	return us.UserDao.ChangeUserEmail(UserID, NewEmail)
+}
+
+// 修改用户名
+func (us *UserService) ChangeUsername(UserID, NewName string) error {
+	return us.UserDao.ChangeUsername(UserID, NewName)
+}
+
+// 通过id查找用户信息
+func (us *UserService) GetUserFromID(UserID string) (*models.Usermessage, error) {
+	return us.UserDao.GetUserFromID(UserID)
 }

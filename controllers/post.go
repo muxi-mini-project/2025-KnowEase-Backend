@@ -3,13 +3,9 @@ package controllers
 import (
 	"KnowEase/models"
 	"KnowEase/services"
-	"fmt"
-	"log"
-
-	"net/http"
-
 	"encoding/json"
-	"strings"
+	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -50,14 +46,6 @@ func (pc *PostControllers) PublishPostBody(c *gin.Context) {
 		return
 	}
 	Post.PosterID = UserID
-	var URLs []string
-	if err := json.Unmarshal([]byte(Post.ImageURL), &URLs); err != nil {
-		c.JSON(http.StatusBadRequest, models.Write("URL输入无效，请重试！"))
-		return
-	}
-	//拼接url并用逗号分隔开
-	imageURL := strings.Join(URLs, ",")
-	Post.ImageURL = imageURL
 	for {
 		//生成帖子id
 		Post.PostID = pc.EmailService.RandomCode(6)
@@ -175,15 +163,6 @@ func (pc *PostControllers) RecommendationPost(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Write("推荐帖子信息查询失败！"))
 		return
 	}
-	for i := 0; i < len(PostMessages); i++ {
-		parts := strings.Split(PostMessages[i].ImageURL, ",")
-		jsonData, err := json.Marshal(parts)
-		if err != nil {
-			log.Println("something wrong in imageurls:%w", err)
-			continue
-		}
-		PostMessages[i].ImageURL = string(jsonData)
-	}
 	c.JSON(http.StatusOK, gin.H{"message": "请求推荐帖成功！", "posts": PostMessages})
 }
 
@@ -208,15 +187,7 @@ func (pc *PostControllers) CampusPost(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
 		return
 	}
-	for _, Post := range Posts {
-		parts := strings.Split(Post.ImageURL, ",")
-		jsonData, err := json.Marshal(parts)
-		if err != nil {
-			log.Println("something wrong in imageurls:%w", err)
-			continue
-		}
-		Post.ImageURL = string(jsonData)
-	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "请求校园标签帖成功！", "posts": Posts})
 }
 
@@ -240,15 +211,6 @@ func (pc *PostControllers) LifePost(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
 		return
-	}
-	for i := 0; i < len(Posts); i++ {
-		parts := strings.Split(Posts[i].ImageURL, ",")
-		jsonData, err := json.Marshal(parts)
-		if err != nil {
-			log.Println("something wrong in imageurls:%w", err)
-			continue
-		}
-		Posts[i].ImageURL = string(jsonData)
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "请求生活标签帖成功！", "posts": Posts})
 }
@@ -274,15 +236,6 @@ func (pc *PostControllers) FoodPost(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
 		return
 	}
-	for i := 0; i < len(Posts); i++ {
-		parts := strings.Split(Posts[i].ImageURL, ",")
-		jsonData, err := json.Marshal(parts)
-		if err != nil {
-			log.Println("something wrong in imageurls:%w", err)
-			continue
-		}
-		Posts[i].ImageURL = string(jsonData)
-	}
 	c.JSON(http.StatusOK, gin.H{"message": "请求美食标签帖成功！", "posts": Posts})
 }
 
@@ -306,15 +259,6 @@ func (pc *PostControllers) PaintPost(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
 		return
-	}
-	for i := 0; i < len(Posts); i++ {
-		parts := strings.Split(Posts[i].ImageURL, ",")
-		jsonData, err := json.Marshal(parts)
-		if err != nil {
-			log.Println("something wrong in imageurls:%w", err)
-			continue
-		}
-		Posts[i].ImageURL = string(jsonData)
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "请求绘画标签帖成功！", "posts": Posts})
 }
@@ -364,11 +308,11 @@ func (pc *PostControllers) PublishComment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Write("评论发布失败！"))
 		return
 	}
-	PostMessage, _ := pc.PostService.PostDao.SearchPostByID(PostID)
-	User, _ := pc.UserService.UserDao.GetUserFromID(UserID)
-	message := fmt.Sprintf("用户%s评论了帖子%s!", User.Username, PostMessage.Title)
-	if err := pc.LikeService.InitMessage(PostMessage.PosterID, message, User.ImageURL); err != nil {
-		c.JSON(http.StatusMultiStatus, models.Write("回复处理成功，消息上次失败"))
+	PostMessage, _ := pc.PostService.GetPostByID(PostID)
+	User, _ := pc.UserService.GetUserFromID(UserID)
+	message := fmt.Sprintf("用户%s评论了帖子:\n%s", User.Username, PostMessage.Title)
+	if err := pc.LikeService.InitMessage(PostMessage.PosterID, message, User.ImageURL, "评论", PostID); err != nil {
+		c.JSON(http.StatusMultiStatus, models.Write("评论处理成功，消息上传失败"))
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "发布评论成功！", "CommentMessage": Post})
 }
@@ -414,7 +358,7 @@ func (pc *PostControllers) DeleteComment(c *gin.Context) {
 // @Router /api/{userid}/post/{postid}/{commentid}/publishreply [post]
 func (pc *PostControllers) PublishReply(c *gin.Context) {
 	var Post models.Reply
-	CommentID, UserID, PostID := c.Param("comment_id"), c.Param("userid"), c.Param("postid")
+	CommentID, UserID, PostID := c.Param("commentid"), c.Param("userid"), c.Param("postid")
 	if CommentID == "" || UserID == "" || PostID == "" {
 		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
 		return
@@ -445,11 +389,11 @@ func (pc *PostControllers) PublishReply(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.Write("回复发布失败！"))
 		return
 	}
-	PostMessage, _ := pc.PostService.PostDao.SearchPostByID(PostID)
-	CommentMessage, _ := pc.PostService.PostDao.SearchCommentByID(CommentID)
+	PostMessage, _ := pc.PostService.GetPostByID(PostID)
+	CommenterID, CommentBody, _ := pc.LikeService.SearchCommentByID(CommentID)
 	User, _ := pc.UserService.UserDao.GetUserFromID(UserID)
-	message := fmt.Sprintf("用户%s回复了你在帖子%s的评论!", User.Username, PostMessage.Title)
-	if err := pc.LikeService.InitMessage(CommentMessage.CommenterID, message, User.ImageURL); err != nil {
+	message := fmt.Sprintf("用户%s回复了你在帖子%s的评论:\n%s", User.Username, PostMessage.Title, CommentBody)
+	if err := pc.LikeService.InitMessage(CommenterID, message, User.ImageURL, "评论", PostID); err != nil {
 		c.JSON(http.StatusMultiStatus, models.Write("回复处理成功，消息上次失败"))
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "发布回复成功！", "ReplyMessage": Post})
@@ -509,35 +453,105 @@ func (pc *PostControllers) GetPostMessage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "查询帖子信息成功！", "postMessage": *PostMessage})
 }
 
-// @Summary 获取未读消息通知
-// @Description 用户点开消息通知，获取未读的消息（被点赞，被评论），并把消息状态更新为已读
-// @Tags 个人主页-消息通知
+// @Summary 获取未读消息通知-点赞
+// @Description 用户点开消息通知，获取未读的消息(帖子，评论被点赞），并把消息状态更新为已读
+// @Tags 消息-点赞
 // @Accept  json
 // @Produce  json
-// @Param userid path string true "帖子ID"
+// @Param userid path string true "用户ID"
 // @Success 200 {object} map[string]interface{} "成功响应信息以及消息信息"
 // @Success 207 {object} map[string]interface{} "状态更新错误以及消息信息"
 // @Failure 400 {object} models.Response "输入无效，请重试!"
 // @Failure 500 {object} models.Response "查询失败"
-// @Router /api/{userid}/userpage/message [get]
-func (pc *PostControllers) GetUserUnreadMessage(c *gin.Context) {
+// @Router /api/{userid}/likemessage [get]
+func (pc *PostControllers) GetUserUnreadLikeMessage(c *gin.Context) {
 	UserID := c.Param("userid")
 	if UserID == "" {
 		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
 		return
 	}
-	Message, err := pc.PostService.SearchAllUnreadMessage(UserID)
+	Message, err := pc.PostService.SearchAllUnreadMessage(UserID, "点赞")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.Write("查询未读消息出错！"))
 		return
 	}
 	//将所有消息更新为已读
-	err = pc.PostService.UpdateMessageStatus(UserID)
-	if err != nil {
-		c.JSON(http.StatusMultiStatus, gin.H{
-			"message":  "消息更新出错",
-			"messages": Message,
-		})
-	}
+	go pc.PostService.UpdateMessageStatus(UserID, "点赞")
 	c.JSON(http.StatusOK, gin.H{"message": "获取并更新消息成功！", "messages": Message})
+}
+
+// @Summary 获取未读消息通知-评论
+// @Description 用户点开消息通知，获取未读的消息(帖子，评论被评论），并把消息状态更新为已读
+// @Tags 消息-评论
+// @Accept  json
+// @Produce  json
+// @Param userid path string true "用户ID"
+// @Success 200 {object} map[string]interface{} "成功响应信息以及消息信息"
+// @Success 207 {object} map[string]interface{} "状态更新错误以及消息信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
+// @Failure 500 {object} models.Response "查询失败"
+// @Router /api/{userid}/commentmessage [get]
+func (pc *PostControllers) GetUserUnreadCommentMessage(c *gin.Context) {
+	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	Message, err := pc.PostService.SearchAllUnreadMessage(UserID, "评论")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("查询未读消息出错！"))
+		return
+	}
+	//将所有消息更新为已读
+	go pc.PostService.UpdateMessageStatus(UserID, "评论")
+	c.JSON(http.StatusOK, gin.H{"message": "获取并更新消息成功！", "messages": Message})
+}
+
+// @Summary 获取未读消息通知-关注
+// @Description 用户点开消息通知，获取未读的消息（被关注），并把消息状态更新为已读
+// @Tags 消息-关注
+// @Accept  json
+// @Produce  json
+// @Param userid path string true "用户ID"
+// @Success 200 {object} map[string]interface{} "成功响应信息以及消息信息"
+// @Success 207 {object} map[string]interface{} "状态更新错误以及消息信息"
+// @Failure 400 {object} models.Response "输入无效，请重试!"
+// @Failure 500 {object} models.Response "查询失败"
+// @Router /api/{userid}/followmessage [get]
+func (pc *PostControllers) GetUserUnreadFollowMessage(c *gin.Context) {
+	UserID := c.Param("userid")
+	if UserID == "" {
+		c.JSON(http.StatusBadRequest, models.Write("输入无效，请重试！"))
+		return
+	}
+	Message, err := pc.PostService.SearchAllUnreadMessage(UserID, "关注")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("查询未读消息出错！"))
+		return
+	}
+	//将所有消息更新为已读
+	go pc.PostService.UpdateMessageStatus(UserID, "关注")
+	c.JSON(http.StatusOK, gin.H{"message": "获取并更新消息成功！", "messages": Message})
+}
+
+// @Summary 获取图床token
+// @Description 获取token
+// @Tags 图床
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} map[string]interface{} "成功响应信息以及token信息"
+// @Failure 500 {object} models.Response "获取配置文件失败或生成token失败"
+// @Router /api/getToken [get]
+func (ps *PostControllers) GetToken(c *gin.Context) {
+	Config, err := ps.PostService.ReadConfig("config.yaml")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write("获取配置文件出错"))
+		return
+	}
+	token, err := ps.PostService.GetToken(Config)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.Write(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

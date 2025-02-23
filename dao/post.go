@@ -27,7 +27,7 @@ func (pd *PostDao) SyncPostBodyToDB(Body *models.PostMessage) error {
 func (pd *PostDao) DeletePostBody(PostID []string) []error {
 	var Err []error
 	for _, id := range PostID {
-		err := pd.db.Delete(&models.PostMessage{}, "post_id = ?", id).Error
+		err := pd.db.Model(&models.PostMessage{}).Delete("post_id = ?", id).Error
 		if err != nil {
 			Err = append(Err, err)
 		}
@@ -56,12 +56,14 @@ func (pd *PostDao) DeleteReply(ReplyID string) error {
 
 // 查找帖子id
 func (pd *PostDao) SearchPostID(PostID string) error {
-	return pd.db.Where(&models.PostMessage{}, "post_id = ?", PostID).Error
+	var Post models.PostMessage
+	return pd.db.Where("post_id = ?", PostID).First(&Post).Error
 }
 
 // 查找评论id
 func (pd *PostDao) SearchCommentID(CommentID string) error {
-	return pd.db.Where(&models.Comment{}, "comment_id = ?", CommentID).Error
+	var Comment models.Comment
+	return pd.db.Where("comment_id = ?", CommentID).First(&Comment).Error
 }
 
 // 将回复内容写入数据库
@@ -73,14 +75,15 @@ func (pd *PostDao) SyncReplyToDB(Body *models.Reply) error {
 
 // 查找回复id
 func (pd *PostDao) SearchReplyID(ReplyID string) error {
-	return pd.db.Where(&models.Reply{}, "reply_id = ?", ReplyID).Error
+	var Reply models.Reply
+	return pd.db.Where("reply_id = ?", ReplyID).First(&Reply).Error
 }
 
 // 删除帖子所有评论
 func (pd *PostDao) DeleteAllComment(PostID []string) []error {
 	var Err []error
 	for _, id := range PostID {
-		err := pd.db.Delete(&models.Comment{}, "post_id = ?", id).Error
+		err := pd.db.Model(&models.Comment{}).Delete("post_id = ?", id).Error
 		if err != nil {
 			Err = append(Err, err)
 		}
@@ -161,6 +164,9 @@ func (pd *PostDao) SearchUnviewedPost(UserID string) ([]models.PostMessage, erro
 	for _, Post := range Record {
 		RecordID = append(RecordID, Post.PostID)
 	}
+	if RecordID == nil {
+		RecordID = append(RecordID, "")
+	}
 	var Posts []models.PostMessage
 	if err := pd.db.Where("post_id NOT IN ?", RecordID).Find(&Posts).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -181,8 +187,11 @@ func (pd *PostDao) SearchUnviewedPostByTag(UserID, Tag string) ([]models.PostMes
 	for _, Post := range Record {
 		RecordID = append(RecordID, Post.PostID)
 	}
+	if RecordID == nil {
+		RecordID = append(RecordID, "")
+	}
 	var Posts []models.PostMessage
-	if err := pd.db.Where("post_id NOT IN ? AND tag = ?", RecordID, Tag).Find(&Posts); err != nil {
+	if err := pd.db.Where("post_id NOT IN ? AND tag = ?", RecordID, Tag).Find(&Posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to find unviewed post by tag")
 	}
 	return Posts, nil

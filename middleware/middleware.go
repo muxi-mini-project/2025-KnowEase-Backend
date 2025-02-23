@@ -42,4 +42,3 @@ func (m *Middleware) Cors() gin.HandlerFunc {
 
 	return cors.New(c)
 }
-
